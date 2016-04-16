@@ -14,9 +14,24 @@ def getConfiguration(section, entry):
     After calling this function, check if None returned for exception and handle accordingly
     """
     config = ConfigParser.ConfigParser()
-    config.read("config.ini")
+    config.read("../config.ini")
     try:
         return config.get(section, entry)
+    except Exception as details:
+        print details
+        return None
+
+def getServer(section):
+    """
+    Use this to get server info as a tuple (ip address, port)
+    """
+    config = ConfigParser.ConfigParser()
+    config.read("../config.ini")
+    
+    try:
+        ip = config.get(section, "ip")
+        port = int(config.get(section, "port"))
+        return (ip, port)
     except Exception as details:
         print details
         return None
@@ -43,3 +58,14 @@ def receiveObject(sock):
     except Exception as details:
         print details
         return None
+
+def initialize(sid, n):
+    """
+    Initializes servers with list of tuple of peers i.e., (ip address, port)
+    """   
+    peers = list()
+
+    for i in [x for x in range(n) if x != sid]: 
+        peers.append(getServer("Server" + str(i)))
+    
+    return peers
