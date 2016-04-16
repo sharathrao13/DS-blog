@@ -1,3 +1,5 @@
+import threading
+import socket
 from serverHelper import *
 
 class Server(object):
@@ -6,9 +8,31 @@ class Server(object):
         self.sid = sid
         self.n = int(getConfiguration("GeneralConfig", "nodes"))
         self.peers = initialize(self.sid, self.n)
+        # New server socket to listen to requests from Client/Peers
+        self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serverSock.bind((getServer("Server" + str(self.sid))))
+        self.serverSock.listen(5)
+
+    # Crux of server functionality. Main logic goes here
+    def requestHandler(self, connector, address):
+        print "New Thread..."
+        connector.close()
+
+    def start(self):
+        # Start listening for incoming requests
+        while True:
+            connector, address = self.serverSock.accept()
+            threading.Thread(target = self.requestHandler, args = (connector, address)).start()
+
 
 if __name__ == "__main__":
-    s = Server(2)
-    print s.sid
-    print s.n
-    print s.peers
+    try:
+        s = Server(2)
+        print s.sid
+        print s.n
+        print s.peers
+        s.start()
+    except Exception as details:
+        print details
+        s.serverSock.close()
+
