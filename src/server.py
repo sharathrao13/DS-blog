@@ -1,6 +1,7 @@
 import threading
 import socket
 from serverHelper import *
+from message import Message
 
 class Server(object):
 
@@ -14,15 +15,25 @@ class Server(object):
         self.serverSock.listen(5)
 
     # Crux of server functionality. Main logic goes here
-    def requestHandler(self, connector, address):
+    def requestHandler(self, connection, address):
         print "New Thread..."
-        connector.close()
+
+        msg = receiveObject(connection)
+    
+        if msg.state == "sync":
+            pass
+        if msg.state == "get":
+            pass
+        if msg.state == "update":
+            pass
+
+        connection.close()
 
     def start(self):
         # Start listening for incoming requests
         while True:
-            connector, address = self.serverSock.accept()
-            threading.Thread(target = self.requestHandler, args = (connector, address)).start()
+            connection, address = self.serverSock.accept()
+            threading.Thread(target = self.requestHandler, args = (connection, address)).start()
 
 
 if __name__ == "__main__":
