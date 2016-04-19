@@ -9,4 +9,4 @@ class Message(object):
         self.logs = logs
 
     def __repr__(self):
-        return "Class: %s, State: %s, TimeTable: %s, Blog: %s" %(self.__class__.__name__, self.state, self.timeTable, self.blog)
+        return "Class: %s, Operation: %s, TimeTable: %s, Logs: %s" %(self.__class__.__name__, self.operation, self.timeTable, self.logs)
