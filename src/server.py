@@ -9,8 +9,14 @@ class Server(object):
         self.sid = sid
         self.clock = 0
         self.n = int(getConfiguration("GeneralConfig", "nodes"))
+<<<<<<< HEAD
         self.timeTable = [[0 for i in range(self.n)] for i in range(self.n)]
         self.log = [[] for i in range(self.n)]
+=======
+        # log: list of lists. Each list corresponds to each node
+        self.log = [[] for i in range(self.n)]
+        self.timeTable = [[0 for i in range(self.n)] for i in range(self.n)]
+>>>>>>> suraj1
         self.peers = initialize(self.sid, self.n)
         # New server socket to listen to requests from Client/Peers
         self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,6 +51,8 @@ if __name__ == "__main__":
         print s.sid
         print s.n
         print s.peers
+        print s.log
+        print s.timeTable
         s.start()
     except Exception as details:
         print details
