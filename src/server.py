@@ -7,6 +7,7 @@ class Server(object):
 
     def __init__(self, sid):
         self.sid = sid
+        self.clock = 0
         self.n = int(getConfiguration("GeneralConfig", "nodes"))
         self.peers = initialize(self.sid, self.n)
         # New server socket to listen to requests from Client/Peers
@@ -20,11 +21,11 @@ class Server(object):
 
         msg = receiveObject(connection)
     
-        if msg.state == "sync":
+        if msg.operation == "post":
             pass
-        if msg.state == "get":
+        if msg.operation == "lookup":
             pass
-        if msg.state == "update":
+        if msg.operation == "sync":
             pass
 
         connection.close()

@@ -1,8 +1,9 @@
 class Message(object):
 
-    def __init__(self, state, timeTable = None, blog = None):
-        # Possible states: sync, get, update
-        self.state = state
+    def __init__(self, operation, sid = -1, timeTable = None, blog = None):
+        # Possible operations: post, lookup, sync
+        self.operation = operation
+        self.sid = sid
         self.timeTable = timeTable
         self.blog = blog
 
