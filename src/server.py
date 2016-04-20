@@ -25,7 +25,14 @@ class Server(object):
         msg = receiveObject(connection)
     
         if msg.operation == "post":
-            pass
+            # Increment clock and Insert in respective log
+            self.clock += 1
+            self.log[self.sid].append((self.clock, msg.blog))
+            self.timeTable[self.sid][self.sid] += 1
+            # TODO: Update blog to persistent storage
+            print self.log
+            print self.timeTable
+
         if msg.operation == "lookup":
             pass
         if msg.operation == "sync":
@@ -42,7 +49,7 @@ class Server(object):
 
 if __name__ == "__main__":
     try:
-        s = Server(2)
+        s = Server(1)
         print s.sid
         print s.n
         print s.peers
