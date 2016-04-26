@@ -11,4 +11,4 @@ class Message(object):
         self.blog = blog
 
     def __repr__(self):
-        return "Class: %s, Operation: %s, TimeTable: %s, Logs: %s" %(self.__class__.__name__, self.operation, self.timeTable, self.logs)
+        return "Class: %s, Operation: %s, TimeTable: %s, Logs: %s, Blog = %s" %(self.__class__.__name__, self.operation, self.timeTable, self.logs, self.blog)

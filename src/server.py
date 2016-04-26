@@ -2,7 +2,7 @@ import threading
 import socket
 from message import Message
 from config_reader import ConfigReader
-from network_interface import NetworkHandler
+from network_interface import sendObject, receiveObject
 
 class Server(object):
 
@@ -26,14 +26,13 @@ class Server(object):
         self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serverSock.bind((config_reader.get_ip_and_port_of_server("Server" + str(self.current_server_id))))
         self.serverSock.listen(128)
-        self.networkHandler = NetworkHandler(self.serverSock)
 
     # Crux of server functionality. Main logic goes here
     def requestHandler(self, connection, address):
 
         print "New Thread..."
 
-        msg = self.networkHandler.receiveObject(connection)
+        msg = receiveObject(connection)
     
         if "post" == msg.operation:
             # Increment clock and Insert in respective log
