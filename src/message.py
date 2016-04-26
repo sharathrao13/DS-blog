@@ -1,9 +1,10 @@
 class Message(object):
 
-    def __init__(self, operation, sid = -1, timeTable = None, logs = None, blog = None):
+    def __init__(self, operation, sent_server_id = -1, timeTable = None, logs = None, blog = None):
+
         # Possible operations: post, lookup, sync
         self.operation = operation
-        self.sid = sid
+        self.sent_server_id = sent_server_id
         self.timeTable = timeTable
         # logs can be a list of lists. Each list corresponding to a particular node
         self.logs = logs
