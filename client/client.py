@@ -67,8 +67,9 @@ class Client(object):
 
     def start_console(self):
         
+        print "\nClient running..."
+
         while True:
-            print "\nClient running..."
             print"\nChoose server to connect: \n"
             
             for i in range(self.total_servers):
