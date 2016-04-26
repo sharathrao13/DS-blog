@@ -35,12 +35,12 @@ class Client(object):
         sendObject(client_sock, message)
 
         # Receive blogs from server
-        received_message = receiveObject(client_sock)
+        received_list = receiveObject(client_sock)
 
         # Close the socket
         client_sock.close()
 
-        return received_message.blog
+        return received_list
 
     def sync_with_server(self, server_id):
        
@@ -92,12 +92,16 @@ class Client(object):
                         "\n\nYour choice: "))
 
             if (operation == 1):
-                blog = raw_input("Blog:")
+                blog = raw_input("Blog: ")
                 self.publish_post(blog, server_to_connect)
 
             elif (operation == 2):
                 posts = self.read_posts(server_to_connect)
-                print posts
+
+                # Display blogs
+                print "\nBlogs: \n"
+                for post in posts:
+                    print post
 
             elif (operation == 3):
                 self.sync_with_server(server_to_connect)

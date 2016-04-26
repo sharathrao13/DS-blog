@@ -21,6 +21,9 @@ class Server(object):
         self.log = [[] for i in range(self.total_nodes)]
         self.timeTable = [[0 for i in range(self.total_nodes)] for i in range(self.total_nodes)]
 
+        # Blogs at this server
+        self.blogs = list()
+    
         # New server socket to listen to requests from Client/Peers
 
         self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,14 +42,16 @@ class Server(object):
             self.clock += 1
             self.log[self.current_server_id].append((self.clock, msg.blog))
             self.timeTable[self.current_server_id][self.current_server_id] += 1
-            # TODO: Update blog to persistent storage
+            self.blogs.append(msg.blog)
+
             print self.log
             print self.timeTable
             print msg
 
-        elif msg.operation == "lookup":
+        elif "lookup" == msg.operation:
+            sendObject(connection, self.blogs)
             print msg
-        elif msg.operation == "sync":
+        elif "sync" == msg.operation:
             print msg
         else:
             print "Received an unknown operation %s"%msg.operation
@@ -58,7 +63,6 @@ class Server(object):
         while True:
             connection, address = self.serverSock.accept()
             threading.Thread(target = self.requestHandler, args = (connection, address)).start()
-
 
 if __name__ == "__main__":
 
