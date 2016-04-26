@@ -35,7 +35,7 @@ class Server(object):
 
         msg = self.networkHandler.receiveObject(connection)
     
-        if "post" == msg.opeation:
+        if "post" == msg.operation:
             # Increment clock and Insert in respective log
             self.clock += 1
             self.log[self.current_server_id].append((self.clock, msg.blog))

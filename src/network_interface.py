@@ -16,7 +16,7 @@ class NetworkHandler:
             print details
             return None
 
-    def receiveObject(self):
+    def receiveObject(self, sock):
         """
         Use this to receive objects across dataCenters
         """
