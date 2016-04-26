@@ -1,0 +1,5 @@
+import ConfigParser
+
+Config = ConfigParser.ConfigParser()
+Config.read('../client_config.ini')
+print Config

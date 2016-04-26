@@ -3,7 +3,6 @@ import ConfigParser
 class ConfigReader:
 
     def __init__(self, config_file_path):
-
         self.config = ConfigParser.ConfigParser()
         self.config.read(config_file_path)
 
