@@ -1,42 +1,53 @@
 import threading
 import socket
-from serverHelper import *
 from message import Message
+from config_reader import ConfigReader
+from network_interface import NetworkHandler
 
 class Server(object):
 
-    def __init__(self, sid):
-        self.sid = sid
+    def __init__(self):
+
+        config_reader = ConfigReader()
+        self.networkHandler = NetworkHandler()
         self.clock = 0
-        self.n = int(getConfiguration("GeneralConfig", "nodes"))
+
+        #Config information
+        self.current_server_id = int(config_reader.getConfiguration("CurrentServer", "sid"))
+        self.total_nodes = int(config_reader.getConfiguration("GeneralConfig", "nodes"))
+        self.peers = config_reader.get_peer_servers(self.current_server_id, self.n)
+
         # log: list of lists. Each list corresponds to each node
         self.log = [[] for i in range(self.n)]
         self.timeTable = [[0 for i in range(self.n)] for i in range(self.n)]
-        self.peers = initialize(self.sid, self.n)
+
         # New server socket to listen to requests from Client/Peers
         self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.serverSock.bind((getServer("Server" + str(self.sid))))
+        self.serverSock.bind((config_reader.get_ip_and_port_of_server("Server" + str(self.current_server_id))))
         self.serverSock.listen(128)
 
     # Crux of server functionality. Main logic goes here
     def requestHandler(self, connection, address):
+
         print "New Thread..."
 
-        msg = receiveObject(connection)
+        msg = self.networkHandler.receiveObject(connection)
     
-        if msg.operation == "post":
+        if "post" == msg.opeation:
             # Increment clock and Insert in respective log
             self.clock += 1
-            self.log[self.sid].append((self.clock, msg.blog))
-            self.timeTable[self.sid][self.sid] += 1
+            self.log[self.current_server_id].append((self.clock, msg.blog))
+            self.timeTable[self.current_server_id][self.current_server_id] += 1
             # TODO: Update blog to persistent storage
             print self.log
             print self.timeTable
 
-        if msg.operation == "lookup":
+        elif msg.operation == "lookup":
             pass
-        if msg.operation == "sync":
+        elif msg.operation == "sync":
             pass
+        else:
+            print "Received an unknown operation %s"%msg.operation
 
         connection.close()
 
@@ -48,15 +59,13 @@ class Server(object):
 
 
 if __name__ == "__main__":
+
     try:
-        s = Server(1)
-        print s.sid
-        print s.n
-        print s.peers
-        print s.log
-        print s.timeTable
-        s.start()
+        current_server = Server()
+        print "Starting server %s (of total %s) with peers %s"%(current_server.current_server_id, current_server.total_nodes, current_server.peers)
+        current_server.start()
+
     except Exception as details:
         print details
-        s.serverSock.close()
+        current_server.serverSock.close()
 
