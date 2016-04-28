@@ -59,7 +59,7 @@ class Client(object):
         client_sock.connect(self.config_reader.get_ip_and_port_of_server("Server" + server_id))
 
         # Send "sync" message
-        message = Message(operation="sync", syncServer = sync_server)
+        message = Message(operation="sync", server_to_sync = sync_server)
         sendObject(client_sock, message)
 
         # Close the socket
