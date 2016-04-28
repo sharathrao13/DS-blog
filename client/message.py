@@ -10,7 +10,7 @@ class Message(object):
         self.logs = logs
         self.blog = blog
         # syncServer is the server id (integer)
-        self.syncServer = syncServer
+        self.server_to_sync = server_to_sync
 
     def __repr__(self):
         return "Class: %s, Operation: %s, TimeTable: %s, Logs: %s" %(self.__class__.__name__, self.operation, self.timeTable, self.logs)
