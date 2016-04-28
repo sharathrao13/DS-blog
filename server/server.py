@@ -4,6 +4,11 @@ from message import Message
 from config_reader import ConfigReader
 from network_interface import sendObject, receiveObject
 
+POST = "post"
+LOOKUP = "lookup"
+SYNC ="sync"
+SERVER_SYNC="server_sync"
+
 
 class Server(object):
     def __init__(self):
@@ -35,27 +40,21 @@ class Server(object):
 
         msg = receiveObject(server_socket)
 
-        if "post" == msg.operation:
+        if POST == msg.operation:
             # Increment clock and Insert in respective log
             self.clock += 1
-            self.log[self.current_server_id].append((self.clock, msg.blog))
+            self.log.append((self.clock, msg.blog))
             self.timeTable[self.current_server_id][self.current_server_id] += 1
             self.blogs.append(msg.blog)
+            self.print_data(msg, POST)
 
-            print "Log: %s" % self.log
-            print "TT: %s" % self.timeTable
-            print "Msg: %s" % msg
-            print "Clock: %s" % self.clock
 
-        elif "lookup" == msg.operation:
+        elif LOOKUP == msg.operation:
             sendObject(server_socket, self.blogs)
-            print "Log: %s" % self.log
-            print "TT: %s" % self.timeTable
-            print "Msg: %s" % msg
-            print "Clock: %s" % self.clock
+            self.print_data(msg, LOOKUP)
 
         # Client sends the message sync so that the given server syncs with the given parameter
-        elif "sync" == msg.operation:
+        elif SYNC == msg.operation:
 
             # all the entries where hasRec is false
             filtered_log = self.filter_log(self.log, msg.server_to_sync)
@@ -68,12 +67,10 @@ class Server(object):
             sock_to_other.close()
 
             print "Filtered Log: %s" % self.filtered_log
-            print "TT: %s" % self.timeTable
-            print "Msg: %s" % msg
-            print "Clock: %s" % self.clock
+            self.print_data(msg,SYNC)
 
         # Received from a server. Update the logs and sync servers to complete replication
-        elif "server_sync" == msg.operation:
+        elif SERVER_SYNC == msg.operation:
 
             sent_server = msg.sent_server_id
             other_log = msg.logs
@@ -82,12 +79,7 @@ class Server(object):
             self.add_new_events_to_log_and_blog(other_time_table, other_log)
             self.update_max_elements(other_time_table)
             self.update_rows(other_time_table, sent_server)
-
-
-            print "Log: %s" % self.log
-            print "TT: %s" % self.timeTable
-            print "Msg: %s" % msg
-            print "Clock: %s" % self.clock
+            self.print_data(msg,SERVER_SYNC)
 
         else:
             print "Received an unknown operation %s" % msg.operation
@@ -100,8 +92,17 @@ class Server(object):
             connection, address = self.serverSock.accept()
             threading.Thread(target=self.requestHandler, args=(connection, address)).start()
 
-    def filter_log(self, log, server_id):
-        pass
+    def filter_log(self, log, server_to_sync):
+        log_to_send = []
+        # This is an assumption
+        time_of_sender = self.timeTable[server_to_sync][self.current_server_id]
+        for i in range(0, len(log)):
+            time = log[i][0]
+            # hasRec
+            if (time > time_of_sender):
+                log_to_send.append(log[i])
+
+        return log_to_send
 
     def update_max_elements(self, other_time_table):
         for i in range(0, self.total_nodes):
@@ -113,14 +114,18 @@ class Server(object):
             self.timeTable[self.current_server_id][i] = max(self.timeTable[self.current_server_id][i],
                                                             other_time_table[sent_server][i])
 
-    def has_rec(self, server_to_send):
-        # TT[i][k] = t => Site i knows that event k took place at latest of time t
-        return self.timeTable[self.current_server_id][server_to_send] > time(e)
-
     def add_new_events_to_log_and_blog(self, other_time_table, other_log):
-        #Add to Log
-        #Add to Dictionary
-        pass
+        # Add to Log
+        self.log.extend(other_log)
+        # Add to Dictionary
+        for i in range(0, len(other_log)):
+            self.blogs.append(other_log[i][1])
+
+            # TODO Rearrange the blog to maintain the sequence across the replicas
+
+    def print_data(self, msg, operation):
+        print "****************%s Operation***************\nLog: %s\nTT: %s\nMsg %s\nClock: %s\n" % (
+        operation, self.log, self.timeTable, msg, self.clock)
 
 
 if __name__ == "__main__":
