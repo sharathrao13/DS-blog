@@ -92,24 +92,17 @@ class Server(object):
             connection, address = self.serverSock.accept()
             threading.Thread(target=self.requestHandler, args=(connection, address)).start()
 
-    def filter_log(self, log, server_to_sync):
+    def filter_log(self, log_to_be_filtered, server_to_sync):
+        
         log_to_send = []
-        # This is an assumption
-
+    
         # Get the max clock values that I know that server to sync knows about blogs in other servers
         known_clocks = list()
 
         for i in range(self.total_nodes):
             known_clocks.append(self.timeTable[server_to_sync][i])
 
-       # time_of_sender = self.timeTable[server_to_sync][self.current_server_id]
-       # for i in range(0, len(log)):
-       #     time = log[i][0]
-            # hasRec
-       #     if (time > time_of_sender):
-       #         log_to_send.append(log[i])
-
-        log_to_send = [logEntry for logEntry in self.log if logEntry[1] > known_clocks[logEntry[0]]]
+        log_to_send = [logEntry for logEntry in log_to_be_filtered if logEntry[1] > known_clocks[logEntry[0]]]
 
         return log_to_send
 
@@ -124,13 +117,16 @@ class Server(object):
                                                             other_time_table[sent_server][i])
 
     def add_new_events_to_log_and_blog(self, other_time_table, other_log):
+        
         # Add to Log
-        self.log.extend(other_log)
+        log_to_append = self.filter_log(other_log, self.current_server_id)
+        print "Log to append: %s" %log_to_append 
+        self.log.extend(log_to_append)
+    
         # Add to Dictionary
-        for i in range(0, len(other_log)):
-            self.blogs.append(other_log[i][2])
+        for i in range(0, len(log_to_append)):
+            self.blogs.append(log_to_append[i][2])
 
-            # TODO Rearrange the blog to maintain the sequence across the replicas
 
     def print_data(self, msg, operation):
         print "****************%s Operation***************\nLog: %s\nTT: %s\nMsg %s\nClock: %s\n" % (
