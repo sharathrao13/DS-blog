@@ -1,6 +1,6 @@
 class Message(object):
 
-    def __init__(self, operation, sent_server_id = -1, timeTable = None, logs = None, blog = None, syncServer = None):
+    def __init__(self, operation, sent_server_id = -1, timeTable = None, logs = None, blog = None, server_to_sync = None):
 
         # Possible operations: post, lookup, sync
         self.operation = operation

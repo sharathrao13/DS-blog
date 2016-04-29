@@ -13,13 +13,13 @@ SERVER_SYNC="server_sync"
 class Server(object):
     def __init__(self):
 
-        config_reader = ConfigReader('../config.ini')
+        self.config_reader = ConfigReader('../config.ini')
         self.clock = 0
 
         # Config information
-        self.current_server_id = int(config_reader.getConfiguration("CurrentServer", "sid"))
-        self.total_nodes = int(config_reader.getConfiguration("GeneralConfig", "nodes"))
-        self.peers = config_reader.get_peer_servers(self.current_server_id, self.total_nodes)
+        self.current_server_id = int(self.config_reader.getConfiguration("CurrentServer", "sid"))
+        self.total_nodes = int(self.config_reader.getConfiguration("GeneralConfig", "nodes"))
+        self.peers = self.config_reader.get_peer_servers(self.current_server_id, self.total_nodes)
 
         # log: Each list corresponds to each node
         self.log = list()
@@ -30,7 +30,7 @@ class Server(object):
 
         # New server socket to listen to requests from Client/Peers
         self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.serverSock.bind((config_reader.get_ip_and_port_of_server("Server" + str(self.current_server_id))))
+        self.serverSock.bind((self.config_reader.get_ip_and_port_of_server("Server" + str(self.current_server_id))))
         self.serverSock.listen(128)
 
     # Crux of server functionality. Main logic goes here
@@ -43,7 +43,7 @@ class Server(object):
         if POST == msg.operation:
             # Increment clock and Insert in respective log
             self.clock += 1
-            self.log.append((self.clock, msg.blog))
+            self.log.append((self.current_server_id, self.clock, msg.blog))
             self.timeTable[self.current_server_id][self.current_server_id] += 1
             self.blogs.append(msg.blog)
             self.print_data(msg, POST)
@@ -57,7 +57,7 @@ class Server(object):
         elif SYNC == msg.operation:
 
             # all the entries where hasRec is false
-            filtered_log = self.filter_log(self.log, msg.server_to_sync)
+            filtered_log = self.filter_log(self.log, int(msg.server_to_sync))
             message = Message(operation="server_sync", timeTable=self.timeTable, logs=filtered_log,
                               sent_server_id=self.current_server_id)
 
@@ -66,7 +66,7 @@ class Server(object):
             sendObject(sock_to_other, message)
             sock_to_other.close()
 
-            print "Filtered Log: %s" % self.filtered_log
+            print "Filtered Log: %s" % filtered_log
             self.print_data(msg,SYNC)
 
         # Received from a server. Update the logs and sync servers to complete replication
@@ -95,12 +95,21 @@ class Server(object):
     def filter_log(self, log, server_to_sync):
         log_to_send = []
         # This is an assumption
-        time_of_sender = self.timeTable[server_to_sync][self.current_server_id]
-        for i in range(0, len(log)):
-            time = log[i][0]
+
+        # Get the max clock values that I know that server to sync knows about blogs in other servers
+        known_clocks = list()
+
+        for i in range(self.total_nodes):
+            known_clocks.append(self.timeTable[server_to_sync][i])
+
+       # time_of_sender = self.timeTable[server_to_sync][self.current_server_id]
+       # for i in range(0, len(log)):
+       #     time = log[i][0]
             # hasRec
-            if (time > time_of_sender):
-                log_to_send.append(log[i])
+       #     if (time > time_of_sender):
+       #         log_to_send.append(log[i])
+
+        log_to_send = [logEntry for logEntry in self.log if logEntry[1] > known_clocks[logEntry[0]]]
 
         return log_to_send
 
@@ -119,7 +128,7 @@ class Server(object):
         self.log.extend(other_log)
         # Add to Dictionary
         for i in range(0, len(other_log)):
-            self.blogs.append(other_log[i][1])
+            self.blogs.append(other_log[i][2])
 
             # TODO Rearrange the blog to maintain the sequence across the replicas
 
