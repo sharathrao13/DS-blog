@@ -56,10 +56,10 @@ class Client(object):
 
         # Create new socket
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_sock.connect(self.config_reader.get_ip_and_port_of_server("Server" + server_id))
+        client_sock.connect(self.config_reader.get_ip_and_port_of_server("Server" + str(sync_server)))
 
         # Send "sync" message
-        message = Message(operation="sync", server_to_sync = str(sync_server))
+        message = Message(operation="sync", server_to_sync = server_id)
         sendObject(client_sock, message)
 
         # Close the socket
